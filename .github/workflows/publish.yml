@@ -1,0 +1,41 @@
+name: Publish scheduled posts
+
+# Auto-publishes the next due posts from content/schedule.json on a 2-per-week
+# cadence (Mon + Thu). All 32 posts are committed; this flips noindex off and
+# adds them to the hub + sitemap when their publishDate arrives. Manual run via
+# the "Run workflow" button (workflow_dispatch).
+
+on:
+  schedule:
+    - cron: '0 13 * * 1'   # Monday 13:00 UTC (~8am CT) — week's first post
+    - cron: '0 13 * * 4'   # Thursday 13:00 UTC — week's second post
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Publish due posts
+        run: python scripts/publish.py
+      - name: Commit any newly published posts
+        run: |
+          git config user.name "ejs-publisher"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No posts due — nothing to publish."
+          else
+            git commit -m "Auto-publish scheduled posts ($(date -u +%Y-%m-%d))"
+            git push
+          fi

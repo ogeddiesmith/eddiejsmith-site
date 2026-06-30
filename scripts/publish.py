@@ -1,0 +1,104 @@
+#!/usr/bin/env python3
+"""Scheduled publisher for the EJS blog (static, GitHub Pages).
+All 32 posts are committed. This gates them by content/schedule.json: a post is
+LIVE when its publishDate <= today. Live posts are indexable + listed on the hub
++ in the sitemap; future posts carry <meta robots noindex> and are hidden from
+the hub/sitemap until their date. Run weekly by .github/workflows/publish.yml."""
+import json, os, re, html
+from datetime import date
+
+HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE = "https://ogeddiesmith.github.io/eddiejsmith-site"   # swap to https://eddiejsmith.com when DNS live
+BOOK = "https://calendar.app.google/nKdsYJffrjcYnHPt7"
+NL   = "https://www.linkedin.com/newsletters/the-local-lead-gen-playbook-7393014909321736192"
+PILLAR_MASTER = "marketing-roi-for-local-business"
+NOINDEX = '<meta name="robots" content="noindex">'
+
+def esc(s): return html.escape(s or "", quote=True)
+
+FONTS=('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+ '<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">')
+
+def hub_css():
+    """Reuse the exact CSS already shipped on a built post page (single source of truth)."""
+    sample = os.path.join(HERE, "blog", PILLAR_MASTER, "index.html")
+    m = re.search(r"<style>(.*?)</style>", open(sample, encoding="utf-8").read(), re.S)
+    return m.group(1) if m else ""
+
+def toggle_noindex(slug, published):
+    p = os.path.join(HERE, "blog", slug, "index.html")
+    if not os.path.exists(p): return
+    h = open(p, encoding="utf-8").read(); orig = h
+    has = NOINDEX in h
+    if published and has:
+        h = h.replace(NOINDEX, "")
+    elif not published and not has:
+        h = h.replace('<link rel="icon" href="../../favicon.svg">',
+                      '<link rel="icon" href="../../favicon.svg">' + NOINDEX, 1)
+    if h != orig: open(p, "w", encoding="utf-8").write(h)
+
+def render_hub(published):
+    css = hub_css()
+    master = next((m for m in published if m["slug"] == PILLAR_MASTER), None)
+    rest = [m for m in published if m["slug"] != PILLAR_MASTER]
+    rest.sort(key=lambda m: (m["publishDate"], m["slot"]), reverse=True)  # newest first
+    url = BASE + "/blog/"
+    feat = ""
+    if master:
+        feat = ('<a class="feat" href="%s/"><img src="%s/hero.webp" alt="%s"><div class="pad">'
+                '<div class="k">Start here &middot; the pillar guide</div><h2>%s</h2><p>%s</p>'
+                '<span class="go">Read the guide &rarr;</span></div></a>'
+                % (master["slug"], master["slug"], esc(master["h1"]), esc(master["h1"]), esc(master["metaDescription"])))
+    cards = "".join(
+        '<a class="pcard" href="%s/"><img src="%s/hero.webp" alt="%s"><div class="pad"><h3>%s</h3><p>%s</p></div></a>'
+        % (m["slug"], m["slug"], esc(m["h1"]), esc(m["h1"]), esc(m["metaDescription"])) for m in rest)
+    schema = {"@context":"https://schema.org","@type":"Blog","name":"The Local Lead Gen Playbook","url":url,
+              "author":{"@type":"Person","name":"Eddie J. Smith"}}
+    cta = ('<div class="ctablock"><h3>Read how I think before you pay me a dollar.</h3>'
+        '<p>The Local Lead Gen Playbook — my newsletter and public teardowns on making local marketing actually pay.</p>'
+        '<div class="row"><a class="btn btn-gold" href="%s" target="_blank" rel="noopener">Read the free Playbook</a>'
+        '<a class="btn btn-ghost" href="%s" target="_blank" rel="noopener">Book a call</a></div></div>' % (NL, BOOK))
+    out = f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Local Lead Gen Playbook — Eddie J. Smith</title>
+<meta name="description" content="Field notes on making local marketing actually pay — attribution, wasted spend, Google Ads, local SEO, and AI for local service businesses.">
+<link rel="canonical" href="{url}"><link rel="icon" href="../favicon.svg">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Eddie J. Smith">
+<meta property="og:title" content="The Local Lead Gen Playbook — Eddie J. Smith"><meta property="og:description" content="Field notes on making local marketing actually pay.">
+<meta property="og:url" content="{url}"><meta property="og:image" content="{BASE}/og-image.png">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="{BASE}/og-image.png">
+{FONTS}
+<script type="application/ld+json">{json.dumps(schema)}</script>
+<style>{css}</style></head><body>
+<header><nav class="wrap nav"><a class="brand" href="../">EDDIE J<span>.</span> SMITH</a><a class="btn btn-gold" href="{BOOK}" target="_blank" rel="noopener">Book a call</a></nav></header>
+<main class="wrap hubhero">
+<div class="eyebrow">The Local Lead Gen Playbook</div>
+<h1>Field notes on making local marketing pay.</h1>
+<p class="dek">How to see what your marketing actually turns into in booked revenue — attribution, wasted spend, Google Ads, local SEO, and where AI takes the manual work off your plate.</p>
+{feat}<div class="grid">{cards}</div>{cta}
+</main>
+<footer><div class="wrap">Eddie J. Smith &middot; AI &amp; Growth Systems &middot; <a href="../">eddiejsmith.com</a></div></footer>
+</body></html>"""
+    open(os.path.join(HERE, "blog", "index.html"), "w", encoding="utf-8").write(out)
+
+def render_sitemap(published):
+    urls = [BASE + "/", BASE + "/blog/"] + [BASE + "/blog/%s/" % m["slug"] for m in published]
+    body = "\n".join("<url><loc>%s</loc><changefreq>monthly</changefreq></url>" % u for u in urls)
+    open(os.path.join(HERE, "sitemap.xml"), "w", encoding="utf-8").write(
+        '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + body + "\n</urlset>\n")
+
+def main():
+    today = date.today().isoformat()
+    posts = json.load(open(os.path.join(HERE, "content", "posts.json")))
+    published, scheduled = [], []
+    for m in posts:
+        live = m["publishDate"] <= today
+        toggle_noindex(m["slug"], live)
+        (published if live else scheduled).append(m)
+    render_hub(published)
+    render_sitemap(published)
+    print("Publish run %s — live: %d, scheduled: %d" % (today, len(published), len(scheduled)))
+    nextup = sorted(scheduled, key=lambda m: m["publishDate"])[:2]
+    if nextup: print("Next up:", ", ".join("%s (%s)" % (m["slug"], m["publishDate"]) for m in nextup))
+
+if __name__ == "__main__":
+    main()

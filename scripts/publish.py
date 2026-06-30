@@ -8,7 +8,7 @@ import json, os, re, html
 from datetime import date
 
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BASE = "https://ogeddiesmith.github.io/eddiejsmith-site"   # swap to https://eddiejsmith.com when DNS live
+BASE = "https://eddiejsmith.com"   # swap to https://eddiejsmith.com when DNS live
 BOOK = "https://calendar.app.google/nKdsYJffrjcYnHPt7"
 NL   = "https://www.linkedin.com/newsletters/the-local-lead-gen-playbook-7393014909321736192"
 PILLAR_MASTER = "marketing-roi-for-local-business"

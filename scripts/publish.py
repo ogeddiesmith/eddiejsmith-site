@@ -14,6 +14,24 @@ NL   = "https://www.linkedin.com/newsletters/the-local-lead-gen-playbook-7393014
 PILLAR_MASTER = "marketing-roi-for-local-business"
 NOINDEX = '<meta name="robots" content="noindex">'
 
+# Google Tag Manager container (GA4 G-BWVKPMNEXE is configured INSIDE GTM, not here).
+# Kept as plain (non-f) strings so their {…} JS braces don't clash with the f-string template.
+GTM_HEAD = (
+    "<!-- Google Tag Manager -->"
+    "<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':"
+    "new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],"
+    "j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src="
+    "'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);"
+    "})(window,document,'script','dataLayer','GTM-P9X8MDSR');</script>"
+    "<!-- End Google Tag Manager -->"
+)
+GTM_BODY = (
+    "<!-- Google Tag Manager (noscript) -->"
+    '<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P9X8MDSR"'
+    ' height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>'
+    "<!-- End Google Tag Manager (noscript) -->"
+)
+
 def esc(s): return html.escape(s or "", quote=True)
 
 FONTS=('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
@@ -58,7 +76,7 @@ def render_hub(published):
         '<p>The Local Lead Gen Playbook — my newsletter and public teardowns on making local marketing actually pay.</p>'
         '<div class="row"><a class="btn btn-gold" href="%s" target="_blank" rel="noopener">Read the free Playbook</a>'
         '<a class="btn btn-ghost" href="%s" target="_blank" rel="noopener">Book a call</a></div></div>' % (NL, BOOK))
-    out = f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    out = f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">{GTM_HEAD}
 <title>The Local Lead Gen Playbook — Eddie J. Smith</title>
 <meta name="description" content="Field notes on making local marketing actually pay — attribution, wasted spend, Google Ads, local SEO, and AI for local service businesses.">
 <link rel="canonical" href="{url}"><link rel="icon" href="../favicon.svg">
@@ -68,7 +86,7 @@ def render_hub(published):
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="{BASE}/og-image.png">
 {FONTS}
 <script type="application/ld+json">{json.dumps(schema)}</script>
-<style>{css}</style></head><body>
+<style>{css}</style></head><body>{GTM_BODY}
 <header><nav class="wrap nav"><a class="brand" href="../">EDDIE J<span>.</span> SMITH</a><a class="btn btn-gold" href="{BOOK}" target="_blank" rel="noopener">Book a call</a></nav></header>
 <main class="wrap hubhero">
 <div class="eyebrow">The Local Lead Gen Playbook</div>

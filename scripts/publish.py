@@ -14,6 +14,19 @@ NL   = "https://www.linkedin.com/newsletters/the-local-lead-gen-playbook-7393014
 PILLAR_MASTER = "marketing-roi-for-local-business"
 NOINDEX = '<meta name="robots" content="noindex">'
 
+# Google Consent Mode v2 defaults — MUST run BEFORE GTM loads. Region-scoped: denied for
+# EEA/UK/CH (opt-in regimes), granted for the US + everywhere else (so US collection is unchanged).
+CONSENT_HEAD = (
+    "<!-- Google Consent Mode v2 (defaults set BEFORE GTM) -->"
+    "<script>"
+    "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}"
+    "gtag('consent','default',{'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage':'denied',"
+    "'region':['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH']});"
+    "gtag('consent','default',{'ad_storage':'granted','ad_user_data':'granted','ad_personalization':'granted','analytics_storage':'granted'});"
+    "</script>"
+    "<!-- End Google Consent Mode v2 -->"
+)
+
 # Google Tag Manager container (GA4 G-BWVKPMNEXE is configured INSIDE GTM, not here).
 # Kept as plain (non-f) strings so their {…} JS braces don't clash with the f-string template.
 GTM_HEAD = (
@@ -76,7 +89,7 @@ def render_hub(published):
         '<p>The Local Lead Gen Playbook — my newsletter and public teardowns on making local marketing actually pay.</p>'
         '<div class="row"><a class="btn btn-gold" href="%s" target="_blank" rel="noopener">Read the free Playbook</a>'
         '<a class="btn btn-ghost" href="%s" target="_blank" rel="noopener">Book a call</a></div></div>' % (NL, BOOK))
-    out = f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">{GTM_HEAD}
+    out = f"""<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">{CONSENT_HEAD}{GTM_HEAD}
 <title>The Local Lead Gen Playbook — Eddie J. Smith</title>
 <meta name="description" content="Field notes on making local marketing actually pay — attribution, wasted spend, Google Ads, local SEO, and AI for local service businesses.">
 <link rel="canonical" href="{url}"><link rel="icon" href="../favicon.svg">

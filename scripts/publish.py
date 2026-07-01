@@ -64,11 +64,11 @@ CONSENT_BANNER = '''<!-- EJS consent banner (EEA/UK/CH only; updates Consent Mod
       try{
         if(document.getElementById('ejs-consent')) return;
         var s=document.createElement('style');
-        s.textContent='#ejs-consent{position:fixed;left:0;right:0;bottom:0;z-index:2147483647;background:#1a1d28;border-top:1px solid #2a2f3d;color:#f3efe7;font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:1.5;padding:16px 20px;display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;justify-content:center;box-shadow:0 -8px 24px rgba(0,0,0,.35)}#ejs-consent:focus{outline:none}#ejs-consent p{margin:0;max-width:640px;color:#b9bdc8}#ejs-consent .ejs-b{display:flex;gap:10px;flex:0 0 auto}#ejs-consent button{cursor:pointer;border-radius:8px;padding:9px 16px;font-weight:600;font-size:14px;font-family:Inter,system-ui,sans-serif;border:1px solid #2a2f3d}#ejs-consent .ejs-ok{background:#d4a64b;color:#0c0d12;border-color:#d4a64b}#ejs-consent .ejs-no{background:transparent;color:#f3efe7}#ejs-consent button:focus-visible{outline:2px solid #e8c178;outline-offset:2px}';
+        s.textContent='#ejs-consent{position:fixed;left:0;right:0;bottom:0;z-index:2147483647;background:#1a1d28;border-top:1px solid #2a2f3d;color:#f3efe7;font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:1.5;padding:16px 20px;display:flex;flex-wrap:wrap;gap:12px 18px;align-items:center;justify-content:center;box-shadow:0 -8px 24px rgba(0,0,0,.35)}#ejs-consent:focus{outline:none}#ejs-consent p{margin:0;max-width:640px;color:#b9bdc8}#ejs-consent a{color:#e8c178;text-decoration:underline}#ejs-consent .ejs-b{display:flex;gap:10px;flex:0 0 auto}#ejs-consent button{cursor:pointer;border-radius:8px;padding:9px 16px;font-weight:600;font-size:14px;font-family:Inter,system-ui,sans-serif;border:1px solid #2a2f3d}#ejs-consent .ejs-ok{background:#d4a64b;color:#0c0d12;border-color:#d4a64b}#ejs-consent .ejs-no{background:transparent;color:#f3efe7}#ejs-consent button:focus-visible,#ejs-consent a:focus-visible{outline:2px solid #e8c178;outline-offset:2px}';
         document.head.appendChild(s);
         var d=document.createElement('div');
         d.id='ejs-consent'; d.setAttribute('role','dialog'); d.setAttribute('aria-label','Cookie consent'); d.setAttribute('aria-describedby','ejs-consent-desc'); d.setAttribute('tabindex','-1');
-        d.innerHTML='<p id="ejs-consent-desc">We use cookies to measure how this site is used. Accept analytics cookies?</p><div class="ejs-b"><button type="button" class="ejs-no">Decline</button><button type="button" class="ejs-ok">Accept</button></div>';
+        d.innerHTML='<p id="ejs-consent-desc">We use cookies to measure how this site is used — see our <a href="/privacy/">Privacy &amp; Cookie Notice</a>. Accept analytics cookies?</p><div class="ejs-b"><button type="button" class="ejs-no">Decline</button><button type="button" class="ejs-ok">Accept</button></div>';
         document.body.appendChild(d);
         function done(v){ try{localStorage.setItem(KEY,v);}catch(e){} upd(v); if(d.parentNode){d.parentNode.removeChild(d);} }
         d.querySelector('.ejs-ok').addEventListener('click',function(){done('granted');});
@@ -142,7 +142,7 @@ def render_hub(published):
 <p class="dek">How to see what your marketing actually turns into in booked revenue — attribution, wasted spend, Google Ads, local SEO, and where AI takes the manual work off your plate.</p>
 {feat}<div class="grid">{cards}</div>{cta}
 </main>
-<footer><div class="wrap">Eddie J. Smith &middot; AI &amp; Growth Systems &middot; <a href="../">eddiejsmith.com</a></div></footer>{CONSENT_BANNER}
+<footer><div class="wrap">Eddie J. Smith &middot; AI &amp; Growth Systems &middot; <a href="../">eddiejsmith.com</a> &middot; <a href="/privacy/">Privacy</a></div></footer>{CONSENT_BANNER}
 </body></html>"""
     open(os.path.join(HERE, "blog", "index.html"), "w", encoding="utf-8").write(out)
 
